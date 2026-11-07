@@ -1,0 +1,9 @@
+# Defence in depth: nothing in this directory may ever be executed.
+# The application also validates the real MIME type and assigns a random
+# filename, so a PHP file should never land here in the first place.
+Options -ExecCGI -Indexes
+php_flag engine off
+
+<FilesMatch "\.(php|php3|php4|php5|php7|php8|phtml|phar|pl|py|cgi|sh)$">
+    Require all denied
+</FilesMatch>

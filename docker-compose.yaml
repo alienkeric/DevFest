@@ -1,0 +1,48 @@
+name: devfest-lab
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  vuln:
+    build: ./vuln
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: devfest_vuln
+      DB_USER: devfest
+      DB_PASS: devfest
+    depends_on:
+      db:
+        condition: service_healthy
+
+  secure:
+    build: ./secure
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: devfest_secure
+      DB_USER: devfest
+      DB_PASS: devfest
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
